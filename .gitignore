@@ -1,0 +1,22 @@
+# 虚拟环境
+.venv/
+
+# 环境变量（含 API Key，不提交）
+.env
+
+# 输出目录（图片和 PPT 体积大，不提交）
+images/
+ppt/
+logs/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# IDE
+.vscode/
+.idea/
+
+# uv
+uv.lock
