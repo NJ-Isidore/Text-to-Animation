@@ -26,6 +26,12 @@ def main() -> None:
         default=None,
         help="子文件夹名称（默认使用文件名）",
     )
+    img_parser.add_argument(
+        "--ref",
+        nargs="+",
+        default=None,
+        help="参考图本地路径，支持多张（用于保持人物一致性）",
+    )
 
     # generate-ppt 子命令
     ppt_parser = subparsers.add_parser(
@@ -42,7 +48,7 @@ def main() -> None:
 
     if args.command == "generate-images":
         from text2anim.image_generator import run_generate_images
-        run_generate_images(args.prompts_file, args.name)
+        run_generate_images(args.prompts_file, args.name, args.ref)
     elif args.command == "generate-ppt":
         from text2anim.ppt_builder import run_generate_ppt
         run_generate_ppt(args.folder)

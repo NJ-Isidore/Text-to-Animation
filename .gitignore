@@ -18,5 +18,9 @@ __pycache__/
 .vscode/
 .idea/
 
+# 工具产物
+.playwright-mcp/
+.serena/
+
 # uv
 uv.lock

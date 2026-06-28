@@ -3,6 +3,7 @@
 import logging
 from pathlib import Path
 
+import questionary
 from pptx import Presentation
 from pptx.util import Inches, Pt
 
@@ -72,20 +73,19 @@ def select_folder(folder_name: str | None) -> Path:
         logger.info("自动选择: %s", folders[0].name)
         return folders[0]
 
-    # 多个文件夹时交互式选择
-    print("可用的图片文件夹：")
-    for i, f in enumerate(folders, 1):
+    # 多个文件夹时交互式选择（questionary 光标选择）
+    choices = []
+    for f in folders:
         image_count = sum(
             1 for file in f.iterdir()
             if file.suffix.lower() in IMAGE_EXTENSIONS
         )
-        print(f"  {i}) {f.name} ({image_count} 张图片)")
+        choices.append(questionary.Choice(f"{f.name} ({image_count} 张图片)", value=f))
 
-    while True:
-        choice = input(f"请选择 (1-{len(folders)}): ").strip()
-        if choice.isdigit() and 1 <= int(choice) <= len(folders):
-            return folders[int(choice) - 1]
-        print("无效输入，请重新选择")
+    selected = questionary.select("选择图片文件夹:", choices=choices).ask()
+    if selected is None:
+        raise KeyboardInterrupt("用户取消了选择")
+    return selected
 
 
 def get_images(folder: Path) -> list[Path]:

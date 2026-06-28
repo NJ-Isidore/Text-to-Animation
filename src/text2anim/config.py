@@ -13,7 +13,7 @@ load_dotenv(PROJECT_ROOT / ".env")
 API_KEY = os.getenv("OPENAI_API_KEY") or os.getenv("DASHSCOPE_API_KEY", "")
 API_BASE_URL = "https://token-plan.cn-beijing.maas.aliyuncs.com"
 IMAGE_API_PATH = "/api/v1/services/aigc/multimodal-generation/generation"
-IMAGE_MODEL = "wan2.7-image-pro"
+IMAGE_MODEL = "qwen-image-2.0-pro"
 
 # 目录配置
 IMAGES_DIR = PROJECT_ROOT / "images"
@@ -22,6 +22,9 @@ LOGS_DIR = PROJECT_ROOT / "logs"
 
 # 卡通风格 prompt 增强前缀
 CARTOON_STYLE_PREFIX = "卡通风格，色彩鲜明，可爱，扁平化设计，"
+
+# 参考图本地目录
+REFERENCE_IMAGE_DIR = PROJECT_ROOT / "reference_images"
 
 
 def validate_config() -> None:
