@@ -4,16 +4,17 @@
 # 环境变量（含 API Key，不提交）
 .env
 
-# 输出目录（图片和 PPT 体积大，不提交）
-images/
-ppt/
-logs/
+# 输出目录（保留文件夹结构，不提交内部内容）
+images/*
+!images/.gitkeep
+ppt/*
+!ppt/.gitkeep
+logs/*
+!logs/.gitkeep
 
-# 参考图（个人隐私图片，不提交）
-reference_images/*.png
-reference_images/*.jpg
-reference_images/*.jpeg
-reference_images/*.webp
+# 参考图（个人隐私图片，保留文件夹结构，不提交内部内容）
+reference_images/*
+!reference_images/.gitkeep
 
 # Python
 __pycache__/
