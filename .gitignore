@@ -9,6 +9,12 @@ images/
 ppt/
 logs/
 
+# 参考图（个人隐私图片，不提交）
+reference_images/*.png
+reference_images/*.jpg
+reference_images/*.jpeg
+reference_images/*.webp
+
 # Python
 __pycache__/
 *.pyc

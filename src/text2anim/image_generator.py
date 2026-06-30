@@ -11,7 +11,6 @@ import questionary
 from text2anim.config import (
     API_BASE_URL,
     API_KEY,
-    CARTOON_STYLE_PREFIX,
     IMAGE_API_PATH,
     IMAGE_MODEL,
     IMAGES_DIR,
@@ -19,12 +18,16 @@ from text2anim.config import (
     REFERENCE_IMAGE_DIR,
     validate_config,
 )
+from text2anim.prompt_enhancer import enhance_prompt
 
 logger = logging.getLogger(__name__)
 
 # 图像生成 API 超时时间（秒）
 GENERATE_TIMEOUT = 120.0
 DOWNLOAD_TIMEOUT = 60.0
+
+# 参考图数量上限（API 硬性限制：0~3 张）
+MAX_REF_IMAGES = 3
 
 
 def setup_logging() -> None:
@@ -106,11 +109,6 @@ def create_output_folder(name: str | None, use_existing: bool = False) -> Path:
     return folder
 
 
-def enhance_prompt(prompt: str) -> str:
-    """为原始描述添加卡通风格增强"""
-    return CARTOON_STYLE_PREFIX + prompt
-
-
 def sanitize_filename(text: str, max_len: int = 20) -> str:
     """将描述文本转换为安全的文件名"""
     safe = "".join(c for c in text if c.isalnum() or c in ("_", "-"))
@@ -143,7 +141,16 @@ def call_image_api(prompt: str, ref_img_paths: list[Path] | None = None) -> str 
     参数:
         prompt: 增强后的图片描述
         ref_img_paths: 参考图本地路径列表（可选），模型会参考其中的人物特征
+
+    注意:
+        API 硬性限制参考图数量为 0~3 张，超过 3 张会被拒绝
     """
+    if ref_img_paths and len(ref_img_paths) > MAX_REF_IMAGES:
+        logger.warning(
+            "参考图数量（%d）超过上限（%d），仅使用前 %d 张",
+            len(ref_img_paths), MAX_REF_IMAGES, MAX_REF_IMAGES,
+        )
+        ref_img_paths = ref_img_paths[:MAX_REF_IMAGES]
     url = f"{API_BASE_URL}{IMAGE_API_PATH}"
     headers = {
         "Authorization": f"Bearer {API_KEY}",
@@ -256,7 +263,7 @@ def select_reference_images(ref_imgs: list[str] | None) -> list[Path] | None:
     choices.append(questionary.Choice("不使用参考图", value=None))
 
     selected = questionary.checkbox(
-        "选择参考图（空格勾选，回车确认）:",
+        f"选择参考图（空格勾选，回车确认，最多 {MAX_REF_IMAGES} 张）:",
         choices=choices,
     ).ask()
 
@@ -269,6 +276,14 @@ def select_reference_images(ref_imgs: list[str] | None) -> list[Path] | None:
     if not paths:
         logger.info("未选择参考图，将不使用参考图生成")
         return None
+
+    # 校验数量上限
+    if len(paths) > MAX_REF_IMAGES:
+        logger.warning(
+            "已选择 %d 张参考图，但 API 最多支持 %d 张，仅使用前 %d 张",
+            len(paths), MAX_REF_IMAGES, MAX_REF_IMAGES,
+        )
+        paths = paths[:MAX_REF_IMAGES]
 
     logger.info("已选择 %d 张参考图", len(paths))
     return paths
@@ -323,6 +338,9 @@ def run_generate_images(
     else:
         ref_img_paths = select_reference_images(ref_imgs)
         prompts = read_prompts(prompts_file)
+        # 文件模式：如果 --name 匹配已有文件夹，直接复用
+        if name and (IMAGES_DIR / name).is_dir():
+            use_existing = True
 
     folder = create_output_folder(name, use_existing)
 

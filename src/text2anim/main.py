@@ -4,6 +4,21 @@ import argparse
 import sys
 
 
+def _post_gen_prompt() -> None:
+    """生成完成后的交互提示，返回退出码供 bat 判断"""
+    print()
+    print("  [Y] 继续生成新一轮图片")
+    print("  [N] 退出")
+    print()
+    while True:
+        choice = input("请选择操作 (Y/N): ").strip().upper()
+        if choice == "Y":
+            sys.exit(0)
+        elif choice == "N":
+            sys.exit(2)
+        print("请输入 Y 或 N")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="文字描述 → 卡通图片 → PPT",
@@ -44,6 +59,12 @@ def main() -> None:
         help="指定 images/ 下的子文件夹名称",
     )
 
+    # post-gen-prompt 子命令（生成完成后的交互提示）
+    subparsers.add_parser(
+        "post-gen-prompt",
+        help=argparse.SUPPRESS,
+    )
+
     args = parser.parse_args()
 
     if args.command == "generate-images":
@@ -52,6 +73,8 @@ def main() -> None:
     elif args.command == "generate-ppt":
         from text2anim.ppt_builder import run_generate_ppt
         run_generate_ppt(args.folder)
+    elif args.command == "post-gen-prompt":
+        _post_gen_prompt()
     else:
         parser.print_help()
         sys.exit(1)

@@ -15,13 +15,14 @@ API_BASE_URL = "https://token-plan.cn-beijing.maas.aliyuncs.com"
 IMAGE_API_PATH = "/api/v1/services/aigc/multimodal-generation/generation"
 IMAGE_MODEL = "qwen-image-2.0-pro"
 
+# 文本模型配置（Prompt 增强用，复用同一 API Key）
+TEXT_MODEL = "qwen3.7-max"
+TEXT_API_PATH = "/compatible-mode/v1/chat/completions"
+
 # 目录配置
 IMAGES_DIR = PROJECT_ROOT / "images"
 PPT_DIR = PROJECT_ROOT / "ppt"
 LOGS_DIR = PROJECT_ROOT / "logs"
-
-# 卡通风格 prompt 增强前缀
-CARTOON_STYLE_PREFIX = "卡通风格，色彩鲜明，可爱，扁平化设计，"
 
 # 参考图本地目录
 REFERENCE_IMAGE_DIR = PROJECT_ROOT / "reference_images"

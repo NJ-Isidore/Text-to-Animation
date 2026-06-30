@@ -46,16 +46,19 @@ DASHSCOPE_API_KEY=sk-xxx
 ```
 main.py (CLI)
   ├── generate-images → image_generator.py
-  │     读取 prompts → 自动添加卡通风格前缀 → 调用 DashScope API → 下载图片
+  │     读取 prompts → prompt_enhancer 增强 → 调用 DashScope API → 下载图片
   │     可选：选择参考图 → Base64 编码 → 放入 content 数组传入 API
+  │     └── prompt_enhancer.py
+  │           方案A 结构化重组 → 方案B LLM改写(qwen3.7-max) → 添加卡通前缀
   └── generate-ppt  → ppt_builder.py
         扫描 images/ 子文件夹 → 选择文件夹 → python-pptx 合成幻灯片
 ```
 
-**四个核心模块：**
+**五个核心模块：**
 
-- `config.py` — 集中管理所有配置：API 端点（`token-plan.cn-beijing.maas.aliyuncs.com`）、模型名、目录路径、卡通风格前缀。通过 `validate_config()` 在运行前校验。
-- `image_generator.py` — 图像生成。`enhance_prompt()` 自动为每条描述添加卡通风格前缀；`call_image_api()` 支持可选参考图（Base64 编码放入 content 数组）保持人物一致性；`select_reference_images()` 交互选择参考图（支持多选）。
+- `config.py` — 集中管理所有配置：API 端点（`token-plan.cn-beijing.maas.aliyuncs.com`）、图像模型名、文本模型名（`qwen3.7-max`）、目录路径。通过 `validate_config()` 在运行前校验。
+- `prompt_enhancer.py` — Prompt 增强。`restructure_prompt()` 本地结构化重组（人物隔离、场景补全、构图建议）；`rewrite_prompt_with_llm()` 调用 qwen3.7-max 改写为丰富视觉描述；`enhance_prompt()` 串联两步并添加卡通前缀。
+- `image_generator.py` — 图像生成。`call_image_api()` 支持可选参考图（Base64 编码放入 content 数组）保持人物一致性；`select_reference_images()` 交互选择参考图（支持多选）。
 - `ppt_builder.py` — PPT 合成。使用空白布局（slide_layouts[6]），图片居中最大 10×6 英寸，底部附标题文字（从文件名提取）。
 - `main.py` — 仅做 argparse 路由（`--ref` 参考图参数），延迟导入子模块以保持启动速度。
 
@@ -69,4 +72,4 @@ main.py (CLI)
 
 - Python ≥3.12，构建工具 uv（uv_build 后端）
 - 依赖：httpx（API 请求）、python-pptx（PPT 生成）、python-dotenv（环境变量）、questionary（交互式 CLI 选择）
-- API：阿里云 DashScope 多模态生成，模型 `qwen-image-2.0-pro`，输出 2048×2048，支持参考图（通过 content 数组传入 Base64 编码图片）
+- API：阿里云 DashScope — 图像生成 `qwen-image-2.0-pro`（输出 2048×2048，支持参考图）；文本生成 `qwen3.7-max`（OpenAI 兼容格式，用于 Prompt 增强）
